@@ -2,7 +2,7 @@
 
 Secure document sharing with a real audit trail. A document can be reached only by someone it was granted to, by name. Taking access away works on the next request. Every access is recorded, including the refused ones, in a hash-chained log that cannot be quietly altered.
 
-**Live demo:** `https://Yaswanth9505.pythonanywhere.com`
+**Live demo:** `https://yaswanth9505.pythonanywhere.com`
 
 **Stack:** Python 3.11+ · Flask · SQLite · `cryptography` (AES-256-GCM). Three dependencies. No front-end framework.
 
@@ -38,7 +38,7 @@ The full permission model is explained in [WRITEUP.md](WRITEUP.md), the threats 
 
 ```bash
 git clone https://github.com/Yaswanth-9505/Trust-Vault.git
-cd trustvault
+cd Trust-Vault
 python3 -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -74,7 +74,7 @@ Store the backup and `TV_MASTER_KEY` separately. Neither one is useful without t
 Full click-by-click instructions for PythonAnywhere (free, HTTPS) are in **[DEPLOY.md](DEPLOY.md)**, including a troubleshooting table. After deploying, prove the live site holds:
 
 ```bash
-python -m scripts.check_live https://Yaswanth9505.pythonanywhere.com
+python -m scripts.check_live https://yaswanth9505.pythonanywhere.com
 ```
 
 A `Dockerfile` is included for container hosts.
