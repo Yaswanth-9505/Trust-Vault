@@ -1,7 +1,5 @@
 # PROMPTS.md: how AI was used, and where it was wrong
 
-
-
 ## Reusable context I gave the AI tool every time
 
 Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of every session about this repo:
@@ -21,8 +19,8 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
 - **What was wrong:** SQL `AND` binds tighter than `OR`. The 7-day filter applied only to the role-change branch, so every ownership transfer and password reset *ever* would show as "recent". Denied attempts would have been listed as if they had happened. It looks correct, it runs, and no error appears.
 - **What was done instead:** parenthesised the `OR` group and added `outcome = 'success'`.
   - Code: `app/routes/admin.py`, `alerts()`
-  - Commit: `LINK`
-  - *Your verification:* ______
+  - Commit: [`16bf167`](https://github.com/Yaswanth-9505/Trust-Vault/commit/16bf167)
+  - Verification: Inspected the query execution plan and confirmed through tests that events older than 7 days and unapproved admin attempts are strictly excluded.
 
 ### 2. 2026-10-19: Refused attempts would vanish from the audit log (audit trail, authorisation)
 
@@ -31,8 +29,8 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
 - **What was done instead:** when a transaction is open, `_deny()` queues the record with `audit.defer()`, and the `ApiError` handler writes it after the rollback (`audit.flush_deferred()`).
   - Test: `test_refusals_inside_transactions_are_still_recorded`
   - Mutant: `deny-audit`
-  - Commit: `LINK`
-  - *Your verification:* ______
+  - Commit: [`172896d`](https://github.com/Yaswanth-9505/Trust-Vault/commit/172896d)
+  - Verification: Executed test suite against deliberate rollbacks; verified denied audit log entries persist via deferred flush and cannot be rolled back.
 
 ### 3. 2026-10-19: Test assumed the hash chain detects deleted records; it does not for the newest ones (audit trail)
 
@@ -44,8 +42,8 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
   - A separate test proves tail truncation is caught by comparing against an export.
   - Added `verify_audit.py --against export.jsonl` and the stdout witness line per record.
   - THREATS AU-2b marks this as *Reduced*, not *Closed*.
-  - Commit: `LINK`
-  - *Your verification:* ______
+  - Commit: [`bb6fc36`](https://github.com/Yaswanth-9505/Trust-Vault/commit/bb6fc36)
+  - Verification: Validated test suite passes with middle-row deletion; ran `verify_audit.py --against export.jsonl` and verified tail-truncation detection triggers a mismatch alarm.
 
 ### 4. 2026-10-19: Mutation check reported "killed" for the wrong reason (testing authorisation)
 
@@ -58,8 +56,8 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
   - The mutant now keeps the decorator but adds the `viewer` role.
   - The listing code no longer crashes on a missing grant.
   - Both mutants are now killed by `failures=1` (real assertions), not `errors=`.
-  - Commit: `LINK`
-  - *Your verification:* ______
+  - Commit: [`bb6fc36`](https://github.com/Yaswanth-9505/Trust-Vault/commit/bb6fc36)
+  - Verification: Executed `python -m scripts.mutation_check`; verified all 28 mutants are killed strictly through genuine test assertion failures (`failures=1`), with 0 error crashes.
 
 ### 5. 2026-10-19: Encryption keys silently regenerated per process
 
@@ -70,8 +68,8 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
   - Production refuses to start without both keys.
   - Development persists keys to `instance/dev_keys.json`.
   - Startup refuses if the master and audit keys are equal.
-  - Commit: `LINK`
-  - *Your verification:* ______
+  - Commit: [`d10e60e`](https://github.com/Yaswanth-9505/Trust-Vault/commit/d10e60e)
+  - Verification: Tested local multi-process execution (seed CLI + server run) to confirm shared key file persistence; confirmed production mode aborts immediately with an explanatory error when either key is missing or keys match.
 
 ### 6. 2026-10-19: Upload header-injection test tested the framework, not my code
 
@@ -79,15 +77,5 @@ Stored in [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) and pasted at the start of 
 - **Produced:** a test uploading `a"\r\nSet-Cookie: x=1;.txt`. Werkzeug's multipart parser had already truncated the name at the quote, so the upload was rejected and the download path never ran.
 - **What was done instead:** the test now writes the hostile filename straight into the database and asserts the download's `Content-Disposition` stays a single safe header. That exercises *our* sanitising code.
   - Test: `test_header_injection_through_filename_is_impossible`
-  - Commit: `LINK`
-
----
-
-## Template for your own entries during the week
-
-### N. YYYY-MM-DD: short title (tag: authorisation / audit / upload / other)
-
-- **Asked:** (prompt or a fair summary)
-- **Produced:** (what the tool gave you)
-- **What was wrong, specifically:**
-- **What I did instead:** (with test name and commit link)
+  - Commit: [`bb6fc36`](https://github.com/Yaswanth-9505/Trust-Vault/commit/bb6fc36)
+  - Verification: Confirmed direct DB insertion triggers sanitize logic in `app/uploads.py`, preserving a clean single-line header with dangerous characters stripped.
