@@ -77,20 +77,40 @@ function errorBox(err) { return h("p", { class: "error", role: "alert" }, err.me
 
 // ---------------------------------------------------------------- shell
 function shell(active, ...content) {
+  const icons = {
+    documents: "📄",
+    upload: "📤",
+    trash: "🗑️",
+    admin: "🛡️",
+    account: "⚙️"
+  };
   const link = (href, label, key) =>
-    h("a", { href, "aria-current": active === key ? "page" : null }, label);
+    h("a", { href, "aria-current": active === key ? "page" : null, class: "nav-item" },
+      h("span", { class: "nav-icon" }, icons[key] || "•"),
+      h("span", { class: "nav-label" }, label));
   const u = state.user;
+  const initials = (u.name || "U").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   return h("div", { class: "shell" },
     h("nav", { class: "side", "aria-label": "Main" },
-      h("div", { class: "brand" }, "TrustVault", h("small", null, "Confidential documents")),
-      link("#/documents", "Documents", "documents"),
-      u.role === "owner" ? link("#/upload", "Upload", "upload") : null,
-      u.role !== "admin" ? link("#/trash", "Trash", "trash") : null,
-      u.role === "admin" ? link("#/admin", "Administration", "admin") : null,
-      link("#/account", "Account", "account"),
-      h("div", { class: "who" }, h("strong", null, u.name), h("span", { class: "who-email" }, u.email),
-        h("span", { class: "who-role" }, "Role: " + u.role),
-        h("button", { class: "link", onclick: logout }, "Sign out"))),
+      h("div", { class: "brand" },
+        h("div", { class: "brand-logo" }, "🔐"),
+        h("div", { class: "brand-text" },
+          h("div", { class: "brand-title" }, "TrustVault"),
+          h("small", { class: "brand-badge" }, "CONFIDENTIAL"))),
+      h("div", { class: "nav-links" },
+        link("#/documents", "Documents", "documents"),
+        u.role === "owner" ? link("#/upload", "Upload", "upload") : null,
+        u.role !== "admin" ? link("#/trash", "Trash", "trash") : null,
+        u.role === "admin" ? link("#/admin", "Administration", "admin") : null,
+        link("#/account", "Account", "account")),
+      h("div", { class: "who" },
+        h("div", { class: "who-user-card" },
+          h("div", { class: "who-avatar" }, initials),
+          h("div", { class: "who-details" },
+            h("strong", { class: "who-name" }, u.name),
+            h("span", { class: "who-email" }, u.email),
+            h("span", { class: "role-pill role-" + u.role }, u.role.toUpperCase()))),
+        h("button", { class: "btn-signout", onclick: logout, title: "Sign out" }, "Sign out ⎋"))),
     h("main", { class: "main" }, ...content));
 }
 
@@ -110,8 +130,24 @@ function render(node) {
 // ---------------------------------------------------------------- login
 function viewLogin() {
   const err = h("div");
-  const email = h("input", { id: "email", type: "email", autocomplete: "username", required: true });
-  const pw = h("input", { id: "pw", type: "password", autocomplete: "current-password", required: true });
+  const email = h("input", { id: "email", type: "email", autocomplete: "username", placeholder: "e.g. olivia@trustvault.test", required: true });
+  const pw = h("input", { id: "pw", type: "password", autocomplete: "current-password", placeholder: "••••••••••••", required: true });
+
+  const demoAccounts = [
+    { label: "Olivia (Owner)", email: "olivia@trustvault.test", pass: "Olivia-Demo-2026!", desc: "Owns documents" },
+    { label: "Asha (Admin)", email: "admin@trustvault.test", pass: "Admin-Demo-2026!", desc: "Audit & users" },
+    { label: "Vera (Viewer)", email: "vera@trustvault.test", pass: "Vera-Demo-2026!", desc: "Read & edit" },
+    { label: "Victor (Viewer)", email: "victor@trustvault.test", pass: "Victor-Demo-2026!", desc: "Viewer" },
+    { label: "Oscar (Owner)", email: "oscar@trustvault.test", pass: "Oscar-Demo-2026!", desc: "Private files" },
+    { label: "Pat (Partner)", email: "ext@partner.test", pass: "Partner-Demo-2026!", desc: "External" },
+  ];
+
+  const fill = (acc) => {
+    email.value = acc.email;
+    pw.value = acc.pass;
+    err.replaceChildren();
+  };
+
   const form = h("form", {
     onsubmit: async (e) => {
       e.preventDefault();
@@ -123,14 +159,26 @@ function viewLogin() {
       } catch (ex) { err.replaceChildren(errorBox(ex)); }
     },
   },
-    h("div", { class: "field" }, h("label", { for: "email" }, "Email"), email),
+    h("div", { class: "field" }, h("label", { for: "email" }, "Email Address"), email),
     h("div", { class: "field" }, h("label", { for: "pw" }, "Password"), pw),
     err,
-    h("button", { type: "submit" }, "Sign in"));
-  render(h("div", { class: "login" }, h("div", { class: "sheet" },
-    h("h1", null, "TrustVault"),
-    h("p", { class: "muted" }, "Confidential documents, shared with named people only. Every access is recorded."),
-    form)));
+    h("button", { type: "submit", class: "btn-primary full-width" }, "Sign in to Vault"));
+
+  render(h("div", { class: "login" },
+    h("div", { class: "login-card" },
+      h("div", { class: "login-header" },
+        h("div", { class: "vault-badge-icon" }, "🛡️"),
+        h("h1", null, "TrustVault"),
+        h("p", { class: "login-subtitle" }, "Hardware-grade confidential document vault with immutable audit custody.")),
+      form,
+      h("div", { class: "demo-selector" },
+        h("p", { class: "demo-heading" }, "Quick sign-in with demo accounts:"),
+        h("div", { class: "demo-chips" },
+          demoAccounts.map((acc) => h("button", {
+            type: "button",
+            class: "demo-chip",
+            onclick: () => fill(acc),
+          }, acc.label)))))));
 }
 
 // ---------------------------------------------------------------- documents list
