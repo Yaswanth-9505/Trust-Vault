@@ -1,16 +1,6 @@
 # PROMPTS.md: how AI was used, and where it was wrong
 
-> **Read this first. It is a note to the candidate. Delete this box before submitting.**
->
-> Entries 1 to 6 below are a **true record** of errors that came up while Claude generated the first version of this codebase on 2026-10-19. Each one was caught by a failing test or a review in that session. They are real, but you did not catch them yourself.
->
-> For each entry, before you commit it as yours:
->
-> 1. Reproduce it. Revert the fix locally, watch the test fail, then restore the fix.
-> 2. Rewrite *"What was done instead"* in your own words, saying what **you** checked.
-> 3. Add the commit link.
->
-> Then keep adding **new** entries through the week as you change things. The judges compare dates in this file with your commit history. An honest "the AI generated the base, and here is what I verified and changed" scores far better than a file that pretends otherwise. In the interview you will have to explain every entry.
+
 
 ## Reusable context I gave the AI tool every time
 
