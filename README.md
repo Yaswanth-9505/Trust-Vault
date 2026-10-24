@@ -2,7 +2,7 @@
 
 Secure document sharing with a real audit trail. A document can be reached only by someone it was granted to, by name. Taking access away works on the next request. Every access is recorded, including the refused ones, in a hash-chained log that cannot be quietly altered.
 
-**Live demo:** `https://yaswanth9505.pythonanywhere.com`
+**Live demo:** [https://yaswanth9505.pythonanywhere.com](https://yaswanth9505.pythonanywhere.com)
 
 **Stack:** Python 3.11+ · Flask · SQLite · `cryptography` (AES-256-GCM). Three dependencies. No front-end framework.
 
