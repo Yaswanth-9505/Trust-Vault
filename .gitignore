@@ -9,3 +9,4 @@ instance/
 .env
 dev_keys.json
 *.jsonl
+bandit_report*.json

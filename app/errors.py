@@ -11,6 +11,3 @@ class ApiError(Exception):
             423: "locked", 429: "rate_limited",
         }.get(status, "error")
 
-
-def bad_request(message):
-    return ApiError(400, message)
