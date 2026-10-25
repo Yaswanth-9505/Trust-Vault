@@ -9,6 +9,8 @@ Whatever passes is still always served back as an attachment with
 never rendered by the browser on our origin.
 """
 import io
+import ntpath
+import posixpath
 import re
 import unicodedata
 import zipfile
@@ -38,9 +40,12 @@ def sanitize_filename(raw: str | None) -> str:
     if not raw:
         raise ApiError(400, "The file has no name.")
     name = unicodedata.normalize("NFC", raw)
-    name = name.replace("\\", "/").split("/")[-1]       # drop any path, Windows or POSIX
+    # Strip any path component — handle both POSIX slashes and Windows backslashes
+    # explicitly using ntpath and posixpath so behaviour is the same on every OS.
+    name = ntpath.basename(posixpath.basename(name))
     name = _CONTROL.sub("", name)
-    name = re.sub(r"[‪-‮⁦-⁩]", "", name)  # bidi overrides ("gpj.exe")
+    # Remove Unicode bidi-override characters that can disguise filenames (e.g. "gpj.exe").
+    name = re.sub(r"[\u202a-\u202e\u2066-\u2069]", "", name)
     name = name.strip().lstrip(".")
     if not name or "." not in name:
         raise ApiError(400, "The file name must have an extension.")

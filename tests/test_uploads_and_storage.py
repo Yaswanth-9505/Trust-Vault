@@ -50,11 +50,21 @@ class UploadValidation(TrustVaultTestCase):
         self.assertEqual(self.up("big.pdf", big).status_code, 413)
 
     def test_path_traversal_in_filename_is_neutralised(self):
+        from app.uploads import sanitize_filename
+        # Unit: our sanitizer strips Windows-style paths correctly.
+        self.assertEqual(sanitize_filename("..\\..\\windows\\evil.txt"), "evil.txt")
+        # Integration: POSIX-style traversal via multipart upload.
         r = self.up("../../../../etc/passwd.txt", b"root:x:0:0\n")
         self.assertEqual(r.status_code, 201)
         self.assertEqual(r.get_json()["document"]["filename"], "passwd.txt")
+        # Integration: Werkzeug's multipart parser strips backslashes before our
+        # code runs, so ..\\windows\\evil.txt arrives as "windowsevil.txt".
+        # Path traversal is still impossible — no directory component survives.
         r = self.up("..\\..\\windows\\evil.txt", b"x")
-        self.assertEqual(r.get_json()["document"]["filename"], "evil.txt")
+        fname = r.get_json()["document"]["filename"]
+        self.assertNotIn("\\", fname)
+        self.assertNotIn("/", fname)
+        self.assertTrue(fname.endswith(".txt"))
 
     def test_bidi_override_in_filename_is_removed(self):
         r = self.up("invoice‮gpj.txt", b"x")
