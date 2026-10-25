@@ -95,4 +95,4 @@ A `Dockerfile` is included for container hosts.
 | Schema and setup | [`app/schema.sql`](app/schema.sql), [`scripts/seed.py`](scripts/seed.py), this README |
 | API documentation | [API.md](API.md) |
 | Write-up | [WRITEUP.md](WRITEUP.md) |
-| Demo video | `LINK-TO-VIDEO` |
+| Demo video | [Google Drive](https://drive.google.com/file/d/1ZufdlDhDnXEPkHH1lCGmLgggpVqKWsG6/view?usp=sharing) |
